@@ -2,7 +2,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-SPREADSHEET_ID = '1kvHv1OBCzr9GnFxRu9RTJC7jjQjc9M4rAiDnhyak2Sg'
+SPREADSHEET_ID = '1kvHv1OBCzr9GnFxRu9RTJC7jjQjc9M4rAiDnhyak2Vg'
 
 # cell containing the total number of entries in the sheet
 # so that we know where the new entry has to be added
