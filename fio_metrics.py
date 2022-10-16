@@ -4,7 +4,7 @@
    Extracts IOPS, Bandwidth and Latency (min, max, mean) from given input file
 
    Usage from dashboard folder:
-    python3 -m fio.fio_metrics <path to fio output json file>
+    python3 fio_metrics <path to fio output json file>
 
 """
 
