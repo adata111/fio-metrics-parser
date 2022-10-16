@@ -1,10 +1,11 @@
-"""Extracts required metrics from fio output file.
+"""Extracts required metrics from fio output file and writes to google sheet.
 
    Takes fio output json filepath as command-line input
    Extracts IOPS, Bandwidth and Latency (min, max, mean) from given input file
+   and writes the metrics in appropriate columns in a google sheet
 
    Usage:
-    python3 fio_metrics <path to fio output json file>
+    python3 -m fio.fio_metrics <path to fio output json file>
 
 """
 
@@ -12,6 +13,8 @@ import json
 import re
 import sys
 from typing import Any, Dict, List
+
+from gsheet import gsheet
 
 JOBNAME = 'jobname'
 GLOBAL_OPTS = 'global options'
@@ -32,6 +35,9 @@ LAT = 'lat_ns'
 MIN = 'min'
 MAX = 'max'
 MEAN = 'mean'
+
+# Google sheet worksheet
+WORKSHEET_NAME = 'fio_metrics!'
 
 FILESIZE_CONVERSION = {
     'b': 0.001,
@@ -90,7 +96,7 @@ class NoValuesError(Exception):
 
 
 class FioMetrics:
-  """Handles logic related to parsing fio output.
+  """Handles logic related to parsing fio output and writing them to google sheet.
 
   """
 
@@ -245,18 +251,36 @@ class FioMetrics:
 
     return all_jobs
 
-  def get_metrics(self, filepath) -> List[Dict[str, Any]]:
-    """Returns job metrics obtained from given filepath.
+  def _add_to_gsheet(self, jobs):
+    """Add the metric values to respective columns in a google sheet.
+
+    Args:
+      jobs: list of dicts, contains required metrics for each job
+    """
+
+    values = []
+    for job in jobs:
+      values.append((job[JOBNAME], job[FILESIZE], job[THREADS], job[START_TIME],
+                     job[END_TIME], job[IOPS], job[BW], job[LAT][MIN],
+                     job[LAT][MAX], job[LAT][MEAN]))
+    gsheet.write_to_google_sheet(WORKSHEET_NAME, values)
+
+  def get_metrics(self, filepath, add_to_gsheets=True) -> List[Dict[str, Any]]:
+    """Returns job metrics obtained from given filepath and writes to gsheets.
 
     Args:
       filepath : str
         Path of the json file to be parsed
+      add_to_gsheets: bool, optional, default:True
+        Whether job metrics should be written to Google sheets or not
 
     Returns:
       List of dicts, contains list of jobs and required metrics for each job
     """
     fio_out = self._load_file_dict(filepath)
     job_metrics = self._extract_metrics(fio_out)
+    if add_to_gsheets:
+      self._add_to_gsheet(job_metrics)
 
     return job_metrics
 
