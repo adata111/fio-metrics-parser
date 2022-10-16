@@ -1,6 +1,10 @@
+"""Tests for fio_metrics.
+
+  Usage from perfmetrics/scripts folder: python3 -m fio.fio_metrics_test
+"""
 import unittest
 from unittest import mock
-import fio_metrics
+from fio import fio_metrics
 
 TEST_PATH = './fio/testdata/'
 GOOD_FILE = 'good_out_job.json'
@@ -345,8 +349,8 @@ class TestFioMetricsTest(unittest.TestCase):
         'jobname': '1_thread',
         'filesize': 50000,
         'num_threads': 40,
-        'start_time': 1653027155,
-        'end_time': 1653027226,
+        'start_time': 1653027084,
+        'end_time': 1653027155,
         'iops': 95.26093,
         'bw': 97547,
         'lat_ns': {
@@ -374,8 +378,8 @@ class TestFioMetricsTest(unittest.TestCase):
         'jobname': '2_thread',
         'filesize': 50000,
         'num_threads': 40,
-        'start_time': 1653027155,
-        'end_time': 1653027226,
+        'start_time': 1653027084,
+        'end_time': 1653027155,
         'iops': 95.26093,
         'bw': 97547,
         'lat_ns': {
@@ -400,6 +404,98 @@ class TestFioMetricsTest(unittest.TestCase):
       extracted_metrics = self.fio_metrics_obj._extract_metrics(
           json_obj)
     self.assertIsNone(extracted_metrics)
+
+  def test_get_metrics_for_good_file(self):
+    expected_metrics = [{
+        'jobname': '1_thread',
+        'filesize': 50000,
+        'num_threads': 40,
+        'start_time': 1653027084,
+        'end_time': 1653027155,
+        'iops': 95.26093,
+        'bw': 97547,
+        'lat_ns': {
+            'min': 353377760,
+            'max': 1697519869,
+            'mean': 417754876.774692
+        }
+    }]
+    extracted_metrics = self.fio_metrics_obj.get_metrics(
+        get_full_filepath(GOOD_FILE))
+
+    self.assertEqual(expected_metrics, extracted_metrics)
+
+  def test_get_metrics_for_multiple_jobs_global_fsize(self):
+    """Multiple_jobs_global_fsize_fpath has filesize as global parameter.
+
+    """
+    expected_metrics = [{
+        'jobname': '1_thread',
+        'filesize': 50000,
+        'num_threads': 40,
+        'start_time': 1653381687,
+        'end_time': 1653381758,
+        'iops': 115.354741,
+        'bw': 135655,
+        'lat_ns': {
+            'min': 249737264,
+            'max': 28958587178,
+            'mean': 18494668007.316742
+        }
+    }, {
+        'jobname': '2_thread',
+        'filesize': 50000,
+        'num_threads': 10,
+        'start_time': 1653381758,
+        'end_time': 1653381828,
+        'iops': 34.641075,
+        'bw': 40988,
+        'lat_ns': {
+            'min': 212007238,
+            'max': 21590713209,
+            'mean': 15969313013.822775
+        }
+    }]
+    extracted_metrics = self.fio_metrics_obj.get_metrics(
+        get_full_filepath(MULTIPLE_JOBS_GLOBAL_FSIZE_FILE))
+
+    self.assertEqual(expected_metrics, extracted_metrics)
+
+  def test_get_metrics_for_multiple_jobs_job_fsize(self):
+    """Multiple_jobs_global_fsize_fpath has filesize as job parameter.
+
+    """
+    expected_metrics = [{
+        'jobname': '1_thread',
+        'filesize': 3000,
+        'num_threads': 40,
+        'start_time': 1653597009,
+        'end_time': 1653597085,
+        'iops': 88.851558,
+        'bw': 103682,
+        'lat_ns': {
+            'min': 173373014,
+            'max': 36442812445,
+            'mean': 21799839057.909954
+        }
+    }, {
+        'jobname': '2_thread',
+        'filesize': 5000,
+        'num_threads': 10,
+        'start_time': 1653597085,
+        'end_time': 1653597156,
+        'iops': 37.52206,
+        'bw': 44249,
+        'lat_ns': {
+            'min': 172148734,
+            'max': 20110704859,
+            'mean': 14960429037.40382
+        }
+    }]
+    extracted_metrics = self.fio_metrics_obj.get_metrics(
+        get_full_filepath(MULTIPLE_JOBS_JOB_FSIZE_FILE))
+
+    self.assertEqual(expected_metrics, extracted_metrics)
 
 
 if __name__ == '__main__':
