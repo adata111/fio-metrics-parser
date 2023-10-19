@@ -4,7 +4,7 @@
    Extracts IOPS, Bandwidth and Latency (min, max, mean) from given input file
    and writes the metrics in appropriate columns in a google sheet
 
-   Usage:
+   Usage from perfmetrics/scripts folder:
     python3 -m fio.fio_metrics <path to fio output json file>
 
 """
@@ -35,6 +35,7 @@ LAT = 'lat_ns'
 MIN = 'min'
 MAX = 'max'
 MEAN = 'mean'
+IO_BYTES = 'io_bytes'
 
 # Google sheet worksheet
 WORKSHEET_NAME = 'fio_metrics!'
@@ -206,6 +207,7 @@ class FioMetrics:
       min_lat_ns = job_read[LAT][MIN]
       max_lat_ns = job_read[LAT][MAX]
       mean_lat_ns = job_read[LAT][MEAN]
+      io_bytes = job_read[IO_BYTES]
 
       # default value of numjobs
       numjobs = '1'
@@ -243,6 +245,7 @@ class FioMetrics:
           END_TIME: end_time_s,
           IOPS: iops,
           BW: bw_kibps,
+          IO_BYTES: io_bytes,
           LAT: {MIN: min_lat_ns, MAX: max_lat_ns, MEAN: mean_lat_ns}
       })
 
@@ -261,7 +264,7 @@ class FioMetrics:
     values = []
     for job in jobs:
       values.append((job[JOBNAME], job[FILESIZE], job[THREADS], job[START_TIME],
-                     job[END_TIME], job[IOPS], job[BW], job[LAT][MIN],
+                     job[END_TIME], job[IOPS], job[BW], job[IO_BYTES], job[LAT][MIN],
                      job[LAT][MAX], job[LAT][MEAN]))
     gsheet.write_to_google_sheet(WORKSHEET_NAME, values)
 
@@ -294,4 +297,3 @@ if __name__ == '__main__':
   fio_metrics_obj = FioMetrics()
   temp = fio_metrics_obj.get_metrics(argv[1])
   print(temp)
-
